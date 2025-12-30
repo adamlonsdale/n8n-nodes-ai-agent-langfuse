@@ -3,12 +3,15 @@ import type {
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	ISupplyDataFunctions,
+	SupplyData,
 } from 'n8n-workflow';
 
 import { promptTypeOptions, textFromPreviousNode, textInput } from './src/utils/descriptions';
 // import { getInputs } from './utils';
 import { getToolsAgentProperties } from './V2/description';
 import { toolsAgentExecute } from './V2/execute';
+import { agentWithLangfuseSupplyData } from './V2/supplyData';
 import { getInputs } from './V2/utils';
 
 export class AgentWithLangfuse implements INodeType {
@@ -44,7 +47,8 @@ export class AgentWithLangfuse implements INodeType {
 					!!$parameter.needsFallback   
 					)
 			}}`,
-		outputs: ['main'],
+		outputs: ['main', 'ai_tool'],
+		outputNames: ['Response', 'Tool'],
 		credentials: [
 			{ name: 'langfuseCustomApi', required: true },
 		],
@@ -163,6 +167,17 @@ export class AgentWithLangfuse implements INodeType {
 					},
 				],
 			},
+			// Tool-specific configuration
+			{
+				displayName: 'Tool Description',
+				name: 'toolDescription',
+				type: 'string',
+				default: '',
+				description: 'Description of what this agent does when used as a tool. If empty, a default description will be generated.',
+				typeOptions: {
+					rows: 3,
+				},
+			},
 
 			...getToolsAgentProperties({ withStreaming: true }),
 		],
@@ -180,5 +195,9 @@ export class AgentWithLangfuse implements INodeType {
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		return await toolsAgentExecute.call(this);
+	}
+
+	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
+		return await agentWithLangfuseSupplyData.call(this);
 	}
 }
