@@ -152,4 +152,4 @@ Here’s how a single request looks inside Langfuse:
 - **v0.1** – Initial release with AI Agent + Langfuse integration
 
 ## License
-MIT © 2025 Wistron DXLab
+MIT © 2025 Wistron DXLab  
