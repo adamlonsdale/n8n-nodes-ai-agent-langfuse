@@ -62,7 +62,8 @@ export async function agentWithLangfuseSupplyData(
 					}
 					// Inherit Langfuse metadata from parent
 					if (parameterName === 'langfuseMetadata') {
-						const metadata = originalContext.getNodeParameter('langfuseMetadata', itemIndex, {}) as any;
+						// When used as a tool, we always operate on item index 0
+						const metadata = originalContext.getNodeParameter('langfuseMetadata', 0, {}) as any;
 						
 						// Inherit session ID from parent if not set and parent has one
 						if (parentSessionId && !metadata.sessionId) {
@@ -76,11 +77,36 @@ export async function agentWithLangfuseSupplyData(
 						
 						// Merge custom metadata from parent
 						if (parentMetadata) {
-							const currentMetadata = typeof metadata.customMetadata === 'string'
-								? JSON.parse(metadata.customMetadata)
-								: (metadata.customMetadata || {});
+							let currentMetadata = {};
+							// Safely parse JSON metadata
+							if (typeof metadata.customMetadata === 'string') {
+								try {
+									currentMetadata = JSON.parse(metadata.customMetadata);
+								} catch (error) {
+									// Invalid JSON, use empty object
+									originalContext.logger.warn('Invalid JSON in custom metadata, using empty object');
+								}
+							} else if (metadata.customMetadata) {
+								currentMetadata = metadata.customMetadata;
+							}
+							
 							metadata.customMetadata = {
 								...parentMetadata,
+								...currentMetadata,
+								parentAgent: node.name,
+							};
+						} else if (metadata.customMetadata || parentSessionId || parentUserId) {
+							// Add parentAgent field if we're inheriting anything from parent
+							const currentMetadata = typeof metadata.customMetadata === 'string'
+								? (() => {
+									try {
+										return JSON.parse(metadata.customMetadata);
+									} catch (error) {
+										return {};
+									}
+								})()
+								: (metadata.customMetadata || {});
+							metadata.customMetadata = {
 								...currentMetadata,
 								parentAgent: node.name,
 							};

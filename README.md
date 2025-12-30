@@ -153,3 +153,21 @@ Here’s how a single request looks inside Langfuse:
 
 ## License
 MIT © 2025 Wistron DXLab  
+## Multi-Agent Usage
+
+The AgentWithLangfuse node can now be used as a tool by other AI agents, enabling multi-agent scenarios with unified Langfuse tracing. See [MULTI_AGENT.md](MULTI_AGENT.md) for detailed documentation.
+
+### Quick Start
+
+1. Configure an AgentWithLangfuse node with a model and tools
+2. Connect its **Tool** output to a parent agent's Tool input
+3. The parent can now invoke this agent as a tool
+4. All traces will appear under the same session ID in Langfuse
+
+### Key Benefits
+
+- **Session ID Inheritance**: Child agents automatically inherit parent's session ID
+- **Unified Tracing**: See the entire multi-agent conversation flow in Langfuse
+- **Flexible Hierarchies**: Create complex agent systems with specialized sub-agents
+- **Metadata Merging**: Parent context is automatically passed to child agents
+
